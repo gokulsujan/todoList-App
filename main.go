@@ -7,31 +7,32 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var todos []models.Todo
+var todos = []models.Todo{}
 
 func main() {
 	r := gin.Default()
 
+	r.Static("/static", "/template")
+	r.LoadHTMLGlob("template/*")
 	r.GET("/todos", getTodos)
 	r.POST("/todos", createTodo)
-	/*r.PUT("/todos/:id", updateTodo)
-	r.DELETE("/todos/:id", deleteTodo)*/
 
 	r.Run(":8080")
 }
 
 func getTodos(c *gin.Context) {
-	c.JSON(http.StatusOK, todos)
+	c.HTML(http.StatusOK, "home.html", gin.H{"todo": todos})
+	//c.JSON(http.StatusOK, gin.H{"todo": todos})
 }
 
 func createTodo(c *gin.Context) {
 	var todo models.Todo
-	if err := c.BindJSON(&todo); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid data provided"})
-		return
-	}
+	todo.Title = c.PostForm("title")
+	todo.Description = c.PostForm("description")
+	todo.Status = c.PostForm("status")
 
 	todo.ID = len(todos) + 1
 	todos = append(todos, todo)
-	c.JSON(http.StatusCreated, todo)
+	c.HTML(http.StatusOK, "home.html", nil)
+
 }
