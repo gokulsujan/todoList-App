@@ -8,18 +8,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var todos = []models.Todo{}
+var todos = make(map[int]models.Todo)
 
 func main() {
 	r := gin.Default()
 
 	r.Static("/static", "/template")
 	r.LoadHTMLGlob("template/*")
+	r.GET("/", getTodos)
 	r.GET("/todos", getTodos)
 	r.POST("/todos", createTodo)
-	r.PUT("/todos/:id", updateTodo)
+	r.POST("/update/:id", updateTodo)
 	r.GET("/complete/:id", complete)
 	r.GET("/delete/:id", deleteTodo)
+	r.GET("/update/:id", todoUpdate1)
 
 	r.Run(":8080")
 }
@@ -36,23 +38,35 @@ func createTodo(c *gin.Context) {
 	todo.Status = c.PostForm("status")
 
 	todo.ID = len(todos) + 1
-	todos = append(todos, todo)
+	todos[todo.ID] = todo
 	c.HTML(http.StatusOK, "home.html", nil)
 }
 
-func updateTodo(c *gin.Context) {
-	var newTodo models.Todo
-	c.ShouldBindJSON(&newTodo)
+func todoUpdate1(c *gin.Context) {
 	id := c.Param("id")
 	index, err := strconv.Atoi(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid index"})
 		return
 	}
+	c.HTML(http.StatusAccepted, "update.html", gin.H{"todo": todos[index]})
 
-	todos[index].Title = newTodo.Title
-	todos[index].Description = newTodo.Description
-	todos[index].Status = newTodo.Status
+}
+
+func updateTodo(c *gin.Context) {
+	var newTodo models.Todo
+	id := c.Param("id")
+	index, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid index"})
+		return
+	}
+	newTodo.ID = index
+	newTodo.Title = c.PostForm("title")
+	newTodo.Description = c.PostForm("description")
+	newTodo.Status = c.PostForm("status")
+
+	todos[index] = newTodo
 	c.JSON(http.StatusAccepted, gin.H{"message": "updated"})
 }
 
@@ -64,7 +78,9 @@ func complete(c *gin.Context) {
 		return
 	}
 
-	todos[index].Status = "Completed"
+	td := todos[index]
+	td.Status = "Done"
+	todos[index] = td
 	c.JSON(http.StatusAccepted, gin.H{"message": "updated"})
 }
 
@@ -75,6 +91,6 @@ func deleteTodo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid index"})
 		return
 	}
-	todos = append(todos[:index], todos[index+1:]...)
+	delete(todos, index)
 	c.JSON(http.StatusAccepted, gin.H{"message": "deleted"})
 }
