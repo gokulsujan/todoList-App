@@ -39,7 +39,7 @@ func createTodo(c *gin.Context) {
 
 	todo.ID = len(todos) + 1
 	todos[todo.ID] = todo
-	c.HTML(http.StatusOK, "home.html", nil)
+	c.HTML(http.StatusOK, "home.html", gin.H{"todo": todos})
 }
 
 func todoUpdate1(c *gin.Context) {
@@ -67,7 +67,7 @@ func updateTodo(c *gin.Context) {
 	newTodo.Status = c.PostForm("status")
 
 	todos[index] = newTodo
-	c.JSON(http.StatusAccepted, gin.H{"message": "updated"})
+	c.HTML(http.StatusAccepted, "home.html", gin.H{"message": "Task details Updated", "todo": todos})
 }
 
 func complete(c *gin.Context) {
@@ -81,7 +81,7 @@ func complete(c *gin.Context) {
 	td := todos[index]
 	td.Status = "Done"
 	todos[index] = td
-	c.JSON(http.StatusAccepted, gin.H{"message": "updated"})
+	c.Redirect(http.StatusPermanentRedirect, "/todos")
 }
 
 func deleteTodo(c *gin.Context) {
@@ -92,5 +92,5 @@ func deleteTodo(c *gin.Context) {
 		return
 	}
 	delete(todos, index)
-	c.JSON(http.StatusAccepted, gin.H{"message": "deleted"})
+	c.HTML(http.StatusAccepted, "home.html", gin.H{"message": "Task deleted", "todo": todos})
 }
