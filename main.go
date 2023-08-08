@@ -18,6 +18,7 @@ func main() {
 	r.GET("/todos", getTodos)
 	r.POST("/todos", createTodo)
 	r.PUT("/todos/:id", updateTodo)
+	r.GET("/complete/:id", complete)
 
 	r.Run(":8080")
 }
@@ -51,5 +52,17 @@ func updateTodo(c *gin.Context) {
 	todos[index].Title = newTodo.Title
 	todos[index].Description = newTodo.Description
 	todos[index].Status = newTodo.Status
+	c.JSON(http.StatusAccepted, gin.H{"message": "updated"})
+}
+
+func complete(c *gin.Context) {
+	id := c.Param("id")
+	index, err := strconv.Atoi(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid index"})
+		return
+	}
+
+	todos[index].Status = "Completed"
 	c.JSON(http.StatusAccepted, gin.H{"message": "updated"})
 }

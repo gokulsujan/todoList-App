@@ -32,7 +32,10 @@
                 <td>{{ $item.Title}}</td>
                 <td>{{ $item.Description}}</td>
                 <td>{{ $item.Status}}</td>
-                <td><button class="btn btn-primary"><i class="fa-solid fa-pen-to-square"></i></button>&nbsp;<button class="btn btn-danger"><i class="fa-solid fa-trash"></i></button>&nbsp;{{if $item.Status}}<button class="btn btn-success"><i class="fa-solid fa-check"></i></button>{{ end }}</td>
+                <td><button class="btn btn-primary"><i class="fa-solid fa-pen-to-square"></i></button>&nbsp;<button class="btn btn-danger"><i class="fa-solid fa-trash"></i></button>&nbsp;
+                    {{if ne $item.Status "Completed"}}
+                    <a href="/complete/{{ $index }}" class="btn btn-success"><i class="fa-solid fa-check"></i></a>
+                    {{ end }}</td>
             </tr>
         {{ end }}
         </tbody>
