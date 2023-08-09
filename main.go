@@ -71,6 +71,7 @@ func updateTodo(c *gin.Context) {
 }
 
 func complete(c *gin.Context) {
+	var newTodo models.Todo
 	id := c.Param("id")
 	index, err := strconv.Atoi(id)
 	if err != nil {
@@ -78,10 +79,12 @@ func complete(c *gin.Context) {
 		return
 	}
 
-	td := todos[index]
-	td.Status = "Done"
-	todos[index] = td
-	c.Redirect(http.StatusPermanentRedirect, "/todos")
+	newTodo.ID = index
+	newTodo.Title = todos[index].Title
+	newTodo.Description = todos[index].Description
+	newTodo.Status = "Done"
+	todos[index] = newTodo
+	c.HTML(http.StatusAccepted, "home.html", gin.H{"message": "Task details Updated", "todo": todos})
 }
 
 func deleteTodo(c *gin.Context) {
